@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import User from "./models/userModel.js";
 import productRoutes from "./routes/productRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/product", productRoutes);
+app.use("/api/user", userRoutes);
 
 // Conexión a MongoDB
 mongoose
