@@ -1,9 +1,11 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
 
 // REGISTER
 export const registerUser = async (req, res) => {
-  try {
+try {
     const { name, email, password } = req.body;
 
     // 1. Validación básica
@@ -49,28 +51,41 @@ export const registerUser = async (req, res) => {
 
 // LOGIN
 export const loginUser = async (req, res) => {
-  try {
+    try {
     const { email, password } = req.body;
 
-    // 1. Buscar usuario
+    // Buscar usuario
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Credenciales inválidas" });
+    return res.status(400).json({ message: "Usuario no existe" });
     }
-
-    // 2. Comparar password
+  
+    // Comparar password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Credenciales inválidas" });
+    return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
-    // 3. Login exitoso (sin token aún)
+    // 🔐 Crear token
+    const token = jwt.sign(
+        {
+        id: user._id,
+        email: user.email,
+        },
+        process.env.JWT_SECRET,
+        {
+        expiresIn: "1h",
+        }
+      );
+
     res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+        message: "Login exitoso",
+        token,
+      });
+    } catch (error) {
+    res.status(500).json({
+        message: "Error en login",
+        error: error.message,
+      });
+    }
+  };
