@@ -46,3 +46,31 @@ export const registerUser = async (req, res) => {
     });
 }
 };
+
+// LOGIN
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Buscar usuario
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    // 2. Comparar password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    // 3. Login exitoso (sin token aún)
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
